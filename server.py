@@ -35,20 +35,24 @@ class DNSHandler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
             parsed_packet = Packet.parse(self.data)
-            if len(parsed_packet.answers) != 1:
-                ...
-                # TODO: error packet
-            answer = self.server.resolver.resolve_address(parsed_packet.questions[0].name)
-            print(answer)
-            answer_packet = Packet(Headers(parsed_packet.headers.id, True, 0, False, False, False, False, 0, 0,
-                                           parsed_packet.headers.qdcount, len(answer), 0, 0),
-                                   questions=parsed_packet.questions, answers=answer, additions=[], authorities=[])
-            answer_bytes = answer_packet.pack()
+            if len(parsed_packet.questions) != 1:
+                answer_bytes = Packet.get_error_packet(parsed_packet.headers.id, 1)
+            else:
+                answer = self.server.resolver.resolve_address(parsed_packet.questions[0].name)
+                if len(answer) == 0:
+                    answer_bytes = Packet.get_error_packet(parsed_packet.headers.id, 3)
+                else:
+                    answer_packet = Packet(Headers(parsed_packet.headers.id, True, 0, False, False, False, False, 0, 0,
+                                                   parsed_packet.headers.qdcount, len(answer), 0, 0),
+                                           questions=parsed_packet.questions, answers=answer, additions=[],
+                                           authorities=[])
+                    answer_bytes = answer_packet.pack()
             self.socket.sendto(answer_bytes, self.client_address)
 
         except Exception as ex:
+            answer_bytes = Packet.get_error_packet(0, [], 2)
+            self.socket.sendto(answer_bytes, self.client_address)
             print(ex)
-            ...  # TODO: send error packet
 
     def finish(self):
         print(f'Handled {self.client_address} | {time.time() - self.start_time} seconds')

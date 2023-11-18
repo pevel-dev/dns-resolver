@@ -36,7 +36,6 @@ class Packet:
             data += b
         return data
 
-
     @staticmethod
     def parse(data: bytes) -> 'Packet':
         qname_utils = QNameUtils()
@@ -62,5 +61,8 @@ class Packet:
         )
 
     @staticmethod
-    def get_error_packet() -> bytes:
-        pass
+    def get_error_packet(id: int, error_code: int) -> bytes:
+        return Packet(
+            Headers(id, True, 0, False, False, False, False, 0, error_code, 0, 0, 0, 0),
+            questions=[], answers=[], additions=[], authorities=[]
+        ).pack()
