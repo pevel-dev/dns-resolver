@@ -11,13 +11,13 @@ class Question:
     qclass: int
 
     def pack(self, offset: int, utils: QNameUtils) -> tuple[bytes, int]:
-        data = b''
+        data = []
         name, offset = utils.pack(self.name, offset)
-        data += name
-        data += int.to_bytes(self.qtype, 2, 'big')
-        data += int.to_bytes(self.qclass, 2, 'big')
+        data.append(name)
+        data.append(int.to_bytes(self.qtype, 2, 'big'))
+        data.append(int.to_bytes(self.qclass, 2, 'big'))
 
-        return data, offset + 4
+        return b''.join(data), offset + 4
 
     @staticmethod
     def parse(data: bytes, offset: int, utils: QNameUtils) -> tuple['Question', int]:
