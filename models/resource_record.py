@@ -18,20 +18,20 @@ class ResourceRecord:
     expired_at: time
 
     def pack(self, offset: int, utils: QNameUtils) -> tuple[bytes, int]:
-        data = b''
+        data = []
         name, offset = utils.pack(self.name, offset)
-        data += name
-        data += int.to_bytes(self.rrtype, 2, 'big')
-        data += int.to_bytes(self.rrclass, 2, 'big')
-        data += int.to_bytes(self.ttl, 4, 'big')
-        data += int.to_bytes(self.rdlength, 2, 'big')
+        data.append(name)
+        data.append(int.to_bytes(self.rrtype, 2, 'big'))
+        data.append(int.to_bytes(self.rrclass, 2, 'big'))
+        data.append(int.to_bytes(self.ttl, 4, 'big'))
+        data.append(int.to_bytes(self.rdlength, 2, 'big'))
         if self.rrtype == 1:
             rdata_bytes = self.rdata.pack()
-            data += rdata_bytes
+            data.append(rdata_bytes)
         else:
-            data += 0x00 * self.rdlength
+            data.append(0x00 * self.rdlength)
             offset += self.rdlength
-        return data, offset + 10 + self.rdlength
+        return b''.join(data), offset + 10 + self.rdlength
 
     @staticmethod
     def parse(data: bytes, offset: int, utils: QNameUtils) -> tuple['ResourceRecord', int]:

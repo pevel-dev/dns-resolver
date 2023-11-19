@@ -8,10 +8,7 @@ class AData:
 
     def pack(self) -> bytes:
         ip = self.ip.split('.')
-        data = b''
-        for i in ip:
-            data += int.to_bytes(int(i), 1, byteorder='big')
-        return data
+        return b''.join(int.to_bytes(int(octet), 1, byteorder='big') for octet in ip)
 
     @staticmethod
     def parse(data: bytes, offset: int) -> tuple['AData', int]:

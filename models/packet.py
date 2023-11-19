@@ -25,16 +25,16 @@ class Packet:
 
     def pack(self) -> bytes:
         qname_utils = QNameUtils()
-        data = self.headers.pack()
+        data = [self.headers.pack()]
         offset = 12
         for question in self.questions:
             b, offset = question.pack(offset, qname_utils)
-            data += b
+            data.append(b)
         all_resource_records = self.answers + self.authorities + self.additions
         for record in all_resource_records:
             b, offset = record.pack(offset, qname_utils)
-            data += b
-        return data
+            data.append(b)
+        return b''.join(data)
 
     @staticmethod
     def parse(data: bytes) -> 'Packet':
